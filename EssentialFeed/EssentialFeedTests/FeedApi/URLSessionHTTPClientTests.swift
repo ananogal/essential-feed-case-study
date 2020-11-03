@@ -44,9 +44,26 @@ class URLSessionHTTPClientTests: XCTestCase {
         URLProtocolStub.stopInterceptingRequests()
     }
 
+    func test_getFromURL_perfomdGETRequestWithURL() {
+        URLProtocolStub.startInterceptingRequests()
+        let url = URL(string: "https://a-url.com")!
+        let exp = expectation(description: "Wait for request")
+
+        URLProtocolStub.obeserveRequests { request in
+            XCTAssertEqual(request.url, url)
+            XCTAssertEqual(request.httpMethod, "GET")
+            exp.fulfill()
+        }
+
+        URLSessionHTTPClient().get(from: url) { _ in }
+        wait(for: [exp], timeout: 1.0)
+        URLProtocolStub.stopInterceptingRequests()
+    }
+
     // MARK: - Helpers
     private class URLProtocolStub: URLProtocol {
         private static var stubs: Stub?
+        private static var requestObserver: ((URLRequest) -> Void)?
 
         private struct Stub {
             let data: Data?
@@ -58,17 +75,23 @@ class URLSessionHTTPClientTests: XCTestCase {
             stubs = Stub(data: data, response: response, error: error)
         }
 
+        static func obeserveRequests(observer: @escaping (URLRequest) -> Void ) {
+            requestObserver = observer
+        }
+
         static func startInterceptingRequests() {
             URLProtocol.registerClass(URLProtocolStub.self)
-            stubs = nil
         }
 
         static func stopInterceptingRequests() {
             URLProtocol.unregisterClass(URLProtocolStub.self)
+            stubs = nil
+            requestObserver = nil
         }
 
         override class func canInit(with request: URLRequest) -> Bool {
-           return true
+            requestObserver?(request)
+            return true
         }
 
         override class func canonicalRequest(for request: URLRequest) -> URLRequest {
