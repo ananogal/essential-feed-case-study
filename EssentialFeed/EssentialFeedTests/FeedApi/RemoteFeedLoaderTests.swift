@@ -169,7 +169,5 @@ class RemoteFeedLoaderTests: XCTestCase {
             let response = HTTPURLResponse(url: requestedURLs[index], statusCode: code, httpVersion: nil, headerFields: nil)!
             messages[index].completion(.success(data, response))
         }
-
-
     }
 }
