@@ -1,7 +1,7 @@
 import XCTest
 import EssentialFeed
 
-class RemoteFeedLoaderTests: XCTestCase {
+class LoadFeedFromRemoteUseCaseTests: XCTestCase {
 
     func test_init_doesNotRequestDataFromURL() {
         let (_, client) = makeSUT()
@@ -53,7 +53,7 @@ class RemoteFeedLoaderTests: XCTestCase {
         let (sut, client) =  makeSUT()
 
         expect(sut, toCompleteWithResult: failure(.invalidData), when: {
-            let invalidJSON = Data(bytes: "InvalidJSON".utf8)
+            let invalidJSON = Data("InvalidJSON".utf8)
             client.complete(withStatusCode: 200, data: invalidJSON)
         })
     }
